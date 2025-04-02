@@ -1,0 +1,56 @@
+catalog: nfleming
+schema: ace_hardware
+
+registered_model_name: nfleming.ace_hardware.arma_rag_demo_v202
+
+model_endpoint: databricks-meta-llama-3-3-70b-instruct
+agent_endpoint: arma_rag_demo_v202
+
+vector_search_endpoint: one-env-shared-endpoint-12
+index_name: nfleming.mars.documents_index
+
+text_column: content
+columns:
+  - id 
+  - source_path
+  - image_mime_type
+
+agents:
+  default:
+    system_prompt: |
+      You are the most experienced and knowledgeable sales associate at ACE Hardware.
+      Use the provided context to help customers confidently
+
+      ## Context: 
+      {context}
+  returns:
+    system_prompt: |
+      You are an expert on ACE Hardware’s return and refund policies.
+
+      ## Context:   
+      {context}
+
+  diy:
+    system_prompt: |
+      You are a senior ACE Hardware associate and DIY expert.
+
+      ## Context: 
+      {context}
+
+input_example:
+  messages: 
+    - role: user
+      content: Do you carry Gorilla tape?
+
+input_example_with_history:
+  messages: 
+    - role: user
+      content: Do you carry Gorilla tape?
+    - role: ai
+      content: Yes we do
+    - role: user
+      content: What colors do you have it in?
+    - role: ai
+      content: Black and Red
+    - role: user
+      content:  How much does it cost?
