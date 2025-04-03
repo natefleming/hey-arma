@@ -1,4 +1,11 @@
 # Databricks notebook source
+# MAGIC %load_ext autoreload
+# MAGIC %autoreload 2
+# MAGIC # Enables autoreload; learn more at https://docs.databricks.com/en/files/workspace-modules.html#autoreload-for-python-modules
+# MAGIC # To disable autoreload; run %autoreload 0
+
+# COMMAND ----------
+
 from typing import Sequence
 
 pip_requirements: Sequence[str] = [
@@ -8,6 +15,7 @@ pip_requirements: Sequence[str] = [
   "databricks-agents",
   "databricks-sdk",
   "mlflow",
+  "rich"
 ]
 pip_requirements = " ".join(pip_requirements)
 
@@ -80,16 +88,19 @@ print(f"base_url: {base_url}")
 # MAGIC llm: LanguageModelLike = ChatDatabricks(model=model_endpoint, temperature=0.1)
 # MAGIC
 # MAGIC
+# MAGIC @mlflow.trace
 # MAGIC def format_context(docs):
 # MAGIC     return "\n".join([f"Passage: {d.page_content}" for d in docs])
 # MAGIC
 # MAGIC
+# MAGIC @mlflow.trace
 # MAGIC def extract_user_query_string(chat_messages_array):
 # MAGIC     if not chat_messages_array or not isinstance(chat_messages_array[-1], dict):
 # MAGIC         return ""
 # MAGIC     return chat_messages_array[-1].get("content", "")
 # MAGIC
 # MAGIC
+# MAGIC @mlflow.trace
 # MAGIC def classify_intent(query):
 # MAGIC     query = query.lower()
 # MAGIC     if any(word in query for word in ["how to", "install", "fix", "replace"]):
@@ -99,6 +110,7 @@ print(f"base_url: {base_url}")
 # MAGIC     return "default"
 # MAGIC
 # MAGIC
+# MAGIC @mlflow.trace
 # MAGIC def trim_chat_history(chat_history, max_turns=10):
 # MAGIC     if not chat_history:
 # MAGIC         return []
@@ -110,6 +122,7 @@ print(f"base_url: {base_url}")
 # MAGIC _summarization_cache = {}
 # MAGIC
 # MAGIC
+# MAGIC @mlflow.trace
 # MAGIC def summarize_old_messages(chat_history, summary_model=None):
 # MAGIC     if len(chat_history) <= 10:
 # MAGIC         return chat_history
@@ -147,6 +160,7 @@ print(f"base_url: {base_url}")
 # MAGIC     return [summary] + chat_history[-8:]
 # MAGIC
 # MAGIC
+# MAGIC @mlflow.trace
 # MAGIC def route_prompt(intent_type: str):
 # MAGIC     agents = config.get("agents")
 # MAGIC     match intent_type:
@@ -194,8 +208,7 @@ print(f"base_url: {base_url}")
 # MAGIC         | StrOutputParser()
 # MAGIC     )
 # MAGIC
-# MAGIC     #messages = {"messages": summarized_history}
-# MAGIC     return chain.invoke({})
+# MAGIC     return chain
 # MAGIC
 # MAGIC
 # MAGIC chain: RunnableSequence = RunnableLambda(run)

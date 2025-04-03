@@ -30,16 +30,19 @@ columns: list[str] = config.get("columns")
 llm: LanguageModelLike = ChatDatabricks(model=model_endpoint, temperature=0.1)
 
 
+@mlflow.trace
 def format_context(docs):
     return "\n".join([f"Passage: {d.page_content}" for d in docs])
 
 
+@mlflow.trace
 def extract_user_query_string(chat_messages_array):
     if not chat_messages_array or not isinstance(chat_messages_array[-1], dict):
         return ""
     return chat_messages_array[-1].get("content", "")
 
 
+@mlflow.trace
 def classify_intent(query):
     query = query.lower()
     if any(word in query for word in ["how to", "install", "fix", "replace"]):
@@ -49,6 +52,7 @@ def classify_intent(query):
     return "default"
 
 
+@mlflow.trace
 def trim_chat_history(chat_history, max_turns=10):
     if not chat_history:
         return []
@@ -60,6 +64,7 @@ def trim_chat_history(chat_history, max_turns=10):
 _summarization_cache = {}
 
 
+@mlflow.trace
 def summarize_old_messages(chat_history, summary_model=None):
     if len(chat_history) <= 10:
         return chat_history
@@ -97,6 +102,7 @@ def summarize_old_messages(chat_history, summary_model=None):
     return [summary] + chat_history[-8:]
 
 
+@mlflow.trace
 def route_prompt(intent_type: str):
     agents = config.get("agents")
     match intent_type:
@@ -144,8 +150,7 @@ def run(chat_input):
         | StrOutputParser()
     )
 
-    #messages = {"messages": summarized_history}
-    return chain.invoke({})
+    return chain
 
 
 chain: RunnableSequence = RunnableLambda(run)
